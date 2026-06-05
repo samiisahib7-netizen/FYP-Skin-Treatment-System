@@ -7,7 +7,6 @@ const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
 const hpp = require('hpp');
-const rateLimit = require('express-rate-limit');
 
 const errorHandler = require('./middlewares/errorHandler');
 
@@ -30,15 +29,7 @@ app.use(
 // Logging
 if (process.env.NODE_ENV !== 'test') app.use(morgan('dev'));
 
-// Rate limiter for auth routes (mounted on routers later)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: { success: false, message: 'Too many requests, please try again later.' },
-});
-app.set('authLimiter', authLimiter);
+// Rate limiter is defined in middlewares/rateLimiter.js and used by the auth router.
 
 // Static uploads
 const path = require('path');
