@@ -42,6 +42,10 @@ app.get('/api/v1/health', (req, res) => {
 
 // Mount feature routers (added module-by-module)
 app.use('/api/v1/auth', require('./routes/auth.routes'));
+app.use('/api/v1/users', require('./routes/user.routes'));
+app.use('/api/v1/doctors', require('./routes/doctor.routes'));
+app.use('/api/v1/patients', require('./routes/patient.routes'));
+app.use('/api/v1/riders', require('./routes/rider.routes'));
 
 // 404 + centralized error handler
 app.use((req, res) => {
