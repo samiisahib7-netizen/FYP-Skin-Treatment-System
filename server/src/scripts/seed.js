@@ -10,6 +10,8 @@ const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const Patient = require('../models/Patient');
 const Rider = require('../models/Rider');
+const Appointment = require('../models/Appointment');
+const Prescription = require('../models/Prescription');
 
 const DEFAULTS = [
   {
@@ -103,7 +105,7 @@ async function seed() {
   console.log('[seed] starting…');
 
   for (const item of DEFAULTS) {
-    const user = await upsertUser(item.user);
+    const user = await upsertUser({ ...item.user, role: item.role });
 
     if (item.role === 'doctor') {
       const exists = await Doctor.findOne({ userId: user._id });
@@ -124,6 +126,57 @@ async function seed() {
       if (!exists) {
         await Rider.create({ userId: user._id, ...item.extra });
         console.log(`    + rider profile created`);
+      }
+    }
+  }
+
+  // Sample appointment + prescription (idempotent)
+  const doctorUser = await User.findOne({ email: 'doctor@skintreatment.local' });
+  const patientUser = await User.findOne({ email: 'patient@skintreatment.local' });
+  if (doctorUser && patientUser) {
+    const doctor = await Doctor.findOne({ userId: doctorUser._id });
+    const patient = await Patient.findOne({ userId: patientUser._id });
+
+    if (doctor && patient) {
+      const apptDate = new Date();
+      apptDate.setUTCHours(0, 0, 0, 0);
+      // push to next Monday for demo
+      const day = apptDate.getUTCDay();
+      const daysUntilMon = day === 0 ? 1 : day === 1 ? 7 : 8 - day;
+      apptDate.setUTCDate(apptDate.getUTCDate() + daysUntilMon);
+
+      let appointment = await Appointment.findOne({
+        patientId: patient._id,
+        doctorId: doctor._id,
+        timeSlot: '10:00-10:30',
+        status: 'completed',
+      });
+
+      if (!appointment) {
+        appointment = await Appointment.create({
+          patientId: patient._id,
+          doctorId: doctor._id,
+          date: apptDate,
+          timeSlot: '10:00-10:30',
+          status: 'completed',
+          reason: 'Acne follow-up (seed demo)',
+        });
+        console.log('    + sample completed appointment created');
+      }
+
+      const rxExists = await Prescription.findOne({ appointmentId: appointment._id });
+      if (!rxExists) {
+        await Prescription.create({
+          appointmentId: appointment._id,
+          doctorId: doctor._id,
+          patientId: patient._id,
+          medicines: [
+            { name: 'Benzoyl Peroxide 5%', dosage: 'Apply thin layer', duration: '4 weeks', instructions: 'Once daily at night' },
+            { name: 'Sunscreen SPF 50', dosage: '2 finger lengths', duration: 'Ongoing', instructions: 'Every morning' },
+          ],
+          advice: 'Avoid direct sun exposure. Use gentle cleanser.',
+        });
+        console.log('    + sample prescription created');
       }
     }
   }

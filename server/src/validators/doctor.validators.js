@@ -1,4 +1,5 @@
 const Joi = require('joi');
+const { emailRule } = require('./common');
 const passwordRule = Joi.string().min(8).max(128).required();
 
 const slotSchema = Joi.object({
@@ -14,7 +15,7 @@ const availabilitySchema = Joi.object({
 
 exports.createDoctorSchema = Joi.object({
   name: Joi.string().min(2).max(80).required(),
-  email: Joi.string().email().lowercase().trim().required(),
+  email: emailRule.required(),
   password: passwordRule,
   phone: Joi.string().allow(''),
   specialization: Joi.string().required(),

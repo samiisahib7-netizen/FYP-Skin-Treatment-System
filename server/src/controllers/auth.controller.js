@@ -10,6 +10,7 @@
  */
 const crypto = require('crypto');
 const User = require('../models/User');
+const Patient = require('../models/Patient');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { signToken } = require('../utils/jwt');
@@ -32,6 +33,7 @@ exports.register = asyncHandler(async (req, res) => {
   if (existing) throw new ApiError(409, 'An account with this email already exists.');
 
   const user = await User.create({ name, email, password, role: 'patient' });
+  await Patient.create({ userId: user._id });
 
   const token = issueToken(user);
   res.status(201).json({

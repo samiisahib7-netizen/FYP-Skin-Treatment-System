@@ -2,6 +2,7 @@
  * Joi validation schemas for /auth endpoints.
  */
 const Joi = require('joi');
+const { emailRule } = require('./common');
 
 const passwordRule = Joi.string()
   .min(8)
@@ -17,19 +18,19 @@ const passwordRule = Joi.string()
 
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(80).required(),
-  email: Joi.string().email().lowercase().trim().required(),
+  email: emailRule.required(),
   password: passwordRule,
   // Allow admin to seed a doctor/rider by passing role; default = patient
   role: Joi.string().valid('admin', 'doctor', 'patient', 'rider').default('patient'),
 });
 
 const loginSchema = Joi.object({
-  email: Joi.string().email().lowercase().trim().required(),
+  email: emailRule.required(),
   password: Joi.string().required(),
 });
 
 const forgotPasswordSchema = Joi.object({
-  email: Joi.string().email().lowercase().trim().required(),
+  email: emailRule.required(),
 });
 
 const resetPasswordSchema = Joi.object({

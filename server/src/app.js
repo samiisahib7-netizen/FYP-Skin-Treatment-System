@@ -46,6 +46,9 @@ app.use('/api/v1/users', require('./routes/user.routes'));
 app.use('/api/v1/doctors', require('./routes/doctor.routes'));
 app.use('/api/v1/patients', require('./routes/patient.routes'));
 app.use('/api/v1/riders', require('./routes/rider.routes'));
+app.use('/api/v1/appointments', require('./routes/appointment.routes'));
+app.use('/api/v1/prescriptions', require('./routes/prescription.routes'));
+app.use('/api/v1/reports', require('./routes/report.routes'));
 
 // 404 + centralized error handler
 app.use((req, res) => {
