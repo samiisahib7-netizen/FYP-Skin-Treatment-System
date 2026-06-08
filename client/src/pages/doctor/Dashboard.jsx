@@ -1,6 +1,7 @@
 /**
- * Doctor dashboard — today's appointments + recent patients + quick actions.
+ * Doctor dashboard — today's appointments + quick actions.
  */
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Users, Pill, CheckCircle2 } from 'lucide-react';
 
@@ -13,16 +14,29 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useAuth } from '@/hooks/useAuth';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import appointmentService from '@/services/appointmentService';
+import prescriptionService from '@/services/prescriptionService';
+import { patientName, statusVariant } from '@/utils/appointmentHelpers';
+
+function isToday(dateStr) {
+  const d = new Date(dateStr);
+  const t = new Date();
+  return d.toDateString() === t.toDateString();
+}
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
   usePageTitle('Doctor Dashboard');
+  const [appointments, setAppointments] = useState([]);
+  const [rxCount, setRxCount] = useState(0);
 
-  const today = [
-    { _id: 'a1', patient: 'Mahrukh J.', time: '10:30', reason: 'Acne follow-up', status: 'confirmed' },
-    { _id: 'a2', patient: 'Ali Raza', time: '11:30', reason: 'New consultation', status: 'pending' },
-    { _id: 'a3', patient: 'Sara K.', time: '14:00', reason: 'Prescription refill', status: 'confirmed' },
-  ];
+  useEffect(() => {
+    appointmentService.list().then(setAppointments).catch(() => {});
+    prescriptionService.list().then((r) => setRxCount(r.length)).catch(() => {});
+  }, []);
+
+  const today = useMemo(() => appointments.filter((a) => isToday(a.date)), [appointments]);
+  const completed = appointments.filter((a) => a.status === 'completed').length;
 
   return (
     <DashboardLayout>
@@ -40,9 +54,9 @@ export default function DoctorDashboard() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard label="Today's appointments" value={today.length} icon={Calendar} />
-        <StatCard label="Total patients" value="42" icon={Users} />
-        <StatCard label="Prescriptions issued" value="18" icon={Pill} />
-        <StatCard label="Completed this week" value="23" icon={CheckCircle2} />
+        <StatCard label="Total appointments" value={appointments.length} icon={Users} />
+        <StatCard label="Prescriptions issued" value={rxCount} icon={Pill} />
+        <StatCard label="Completed" value={completed} icon={CheckCircle2} />
       </div>
 
       <Card className="mt-6">
@@ -51,34 +65,38 @@ export default function DoctorDashboard() {
           <CardDescription>{new Date().toDateString()}</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Time</TableHead>
-                <TableHead>Patient</TableHead>
-                <TableHead>Reason</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {today.map((a) => (
-                <TableRow key={a._id}>
-                  <TableCell className="font-medium">{a.time}</TableCell>
-                  <TableCell>{a.patient}</TableCell>
-                  <TableCell className="text-muted-foreground">{a.reason}</TableCell>
-                  <TableCell>
-                    <Badge variant={a.status === 'confirmed' ? 'success' : 'warning'}>
-                      {a.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="outline" size="sm">View</Button>
-                  </TableCell>
+          {today.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No appointments scheduled for today.</p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Time</TableHead>
+                  <TableHead>Patient</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {today.map((a) => (
+                  <TableRow key={a._id}>
+                    <TableCell className="font-medium">{a.timeSlot}</TableCell>
+                    <TableCell>{patientName(a)}</TableCell>
+                    <TableCell className="text-muted-foreground">{a.reason || '—'}</TableCell>
+                    <TableCell>
+                      <Badge variant={statusVariant(a.status)}>{a.status}</Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <Link to="/doctor/appointments">Manage</Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </DashboardLayout>

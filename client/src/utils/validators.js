@@ -46,3 +46,24 @@ export const resetPasswordSchema = z
     path: ['confirmPassword'],
     message: 'Passwords do not match',
   });
+
+export const bookAppointmentSchema = z.object({
+  doctorId: z.string().min(1, 'Select a doctor'),
+  date: z.string().min(1, 'Select a date'),
+  timeSlot: z.string().min(1, 'Select a time slot'),
+  reason: z.string().max(500).optional(),
+});
+
+export const medicineSchema = z.object({
+  name: z.string().min(1, 'Medicine name is required'),
+  dosage: z.string().optional(),
+  duration: z.string().optional(),
+  instructions: z.string().optional(),
+});
+
+export const prescriptionSchema = z.object({
+  appointmentId: z.string().min(1, 'Select an appointment'),
+  medicines: z.array(medicineSchema).min(1, 'Add at least one medicine'),
+  advice: z.string().max(1000).optional(),
+  followUpDate: z.string().optional(),
+});

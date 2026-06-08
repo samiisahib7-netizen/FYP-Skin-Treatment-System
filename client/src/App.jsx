@@ -1,15 +1,12 @@
 /**
  * Root App — full route tree.
  * Public routes: /, /login, /register, /forgot-password, /reset-password/:token
- * Role dashboards (Module 1+ Day 1):
- *   /admin/...   /doctor/...   /patient/...   /rider/...
- *
- * Day 1 wires the dashboard home pages. Per-module sub-pages (appointments,
- * prescriptions, products, etc.) are added in Days 2–5.
+ * Role dashboards: /admin/... /doctor/... /patient/... /rider/...
  */
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
+import DashboardLayout from '@/components/layout/DashboardLayout';
 
 import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
@@ -17,8 +14,20 @@ import ForgotPassword from '@/pages/auth/ForgotPassword';
 import ResetPassword from '@/pages/auth/ResetPassword';
 
 import PatientDashboard from '@/pages/patient/Dashboard';
+import PatientAppointments from '@/pages/patient/Appointments';
+import BookAppointment from '@/pages/patient/BookAppointment';
+import PatientPrescriptions from '@/pages/patient/Prescriptions';
+import PatientReports from '@/pages/patient/Reports';
+
 import DoctorDashboard from '@/pages/doctor/Dashboard';
+import DoctorAppointments from '@/pages/doctor/Appointments';
+import DoctorPrescriptions from '@/pages/doctor/Prescriptions';
+import NewPrescription from '@/pages/doctor/NewPrescription';
+
 import AdminDashboard from '@/pages/admin/Dashboard';
+import AdminAppointments from '@/pages/admin/Appointments';
+import AdminReports from '@/pages/admin/Reports';
+
 import RiderDashboard from '@/pages/rider/Dashboard';
 
 function Home() {
@@ -65,13 +74,15 @@ function Home() {
   );
 }
 
-/** Placeholder for any sub-route added in a later day. */
+/** Placeholder for routes added in later days — keeps sidebar/topbar visible. */
 function ComingSoon({ label }) {
   return (
-    <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center">
-      <p className="text-sm font-medium text-foreground">{label}</p>
-      <p className="mt-1 text-xs text-muted-foreground">This page lands in a later day of the build.</p>
-    </div>
+    <DashboardLayout>
+      <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center">
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        <p className="mt-1 text-xs text-muted-foreground">This page lands in a later day of the build.</p>
+      </div>
+    </DashboardLayout>
   );
 }
 
@@ -86,114 +97,39 @@ export default function App() {
       <Route path="/reset-password/:token" element={<ResetPassword />} />
 
       {/* Admin */}
-      <Route
-        path="/admin"
-        element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/users"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="User Management" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/doctors"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Doctors" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/patients"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Patients" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/riders"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Riders" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/appointments"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="All Appointments" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/orders"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="All Orders" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/products"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Products" /></ProtectedRoute>}
-      />
-      <Route
-        path="/admin/analytics"
-        element={<ProtectedRoute roles={['admin']}><ComingSoon label="Analytics Dashboard" /></ProtectedRoute>}
-      />
+      <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><ComingSoon label="User Management" /></ProtectedRoute>} />
+      <Route path="/admin/doctors" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Doctors" /></ProtectedRoute>} />
+      <Route path="/admin/patients" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Patients" /></ProtectedRoute>} />
+      <Route path="/admin/riders" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Riders" /></ProtectedRoute>} />
+      <Route path="/admin/appointments" element={<ProtectedRoute roles={['admin']}><AdminAppointments /></ProtectedRoute>} />
+      <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']}><AdminReports /></ProtectedRoute>} />
+      <Route path="/admin/orders" element={<ProtectedRoute roles={['admin']}><ComingSoon label="All Orders" /></ProtectedRoute>} />
+      <Route path="/admin/products" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Products" /></ProtectedRoute>} />
+      <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Analytics Dashboard" /></ProtectedRoute>} />
 
       {/* Doctor */}
-      <Route
-        path="/doctor"
-        element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>}
-      />
-      <Route
-        path="/doctor/appointments"
-        element={<ProtectedRoute roles={['doctor']}><ComingSoon label="Doctor Appointments" /></ProtectedRoute>}
-      />
-      <Route
-        path="/doctor/patients"
-        element={<ProtectedRoute roles={['doctor']}><ComingSoon label="My Patients" /></ProtectedRoute>}
-      />
-      <Route
-        path="/doctor/prescriptions"
-        element={<ProtectedRoute roles={['doctor']}><ComingSoon label="Doctor Prescriptions" /></ProtectedRoute>}
-      />
-      <Route
-        path="/doctor/prescriptions/new"
-        element={<ProtectedRoute roles={['doctor']}><ComingSoon label="New Prescription" /></ProtectedRoute>}
-      />
-      <Route
-        path="/doctor/notifications"
-        element={<ProtectedRoute roles={['doctor']}><ComingSoon label="Doctor Notifications" /></ProtectedRoute>}
-      />
+      <Route path="/doctor" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
+      <Route path="/doctor/appointments" element={<ProtectedRoute roles={['doctor']}><DoctorAppointments /></ProtectedRoute>} />
+      <Route path="/doctor/patients" element={<ProtectedRoute roles={['doctor']}><ComingSoon label="My Patients" /></ProtectedRoute>} />
+      <Route path="/doctor/prescriptions" element={<ProtectedRoute roles={['doctor']}><DoctorPrescriptions /></ProtectedRoute>} />
+      <Route path="/doctor/prescriptions/new" element={<ProtectedRoute roles={['doctor']}><NewPrescription /></ProtectedRoute>} />
+      <Route path="/doctor/notifications" element={<ProtectedRoute roles={['doctor']}><ComingSoon label="Doctor Notifications" /></ProtectedRoute>} />
 
       {/* Patient */}
-      <Route
-        path="/patient"
-        element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>}
-      />
-      <Route
-        path="/patient/appointments"
-        element={<ProtectedRoute roles={['patient']}><ComingSoon label="My Appointments" /></ProtectedRoute>}
-      />
-      <Route
-        path="/patient/appointments/new"
-        element={<ProtectedRoute roles={['patient']}><ComingSoon label="Book Appointment" /></ProtectedRoute>}
-      />
-      <Route
-        path="/patient/prescriptions"
-        element={<ProtectedRoute roles={['patient']}><ComingSoon label="My Prescriptions" /></ProtectedRoute>}
-      />
-      <Route
-        path="/patient/reports"
-        element={<ProtectedRoute roles={['patient']}><ComingSoon label="Medical Reports" /></ProtectedRoute>}
-      />
-      <Route
-        path="/patient/orders"
-        element={<ProtectedRoute roles={['patient']}><ComingSoon label="My Orders" /></ProtectedRoute>}
-      />
-      <Route
-        path="/patient/notifications"
-        element={<ProtectedRoute roles={['patient']}><ComingSoon label="Notifications" /></ProtectedRoute>}
-      />
+      <Route path="/patient" element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>} />
+      <Route path="/patient/appointments" element={<ProtectedRoute roles={['patient']}><PatientAppointments /></ProtectedRoute>} />
+      <Route path="/patient/appointments/new" element={<ProtectedRoute roles={['patient']}><BookAppointment /></ProtectedRoute>} />
+      <Route path="/patient/prescriptions" element={<ProtectedRoute roles={['patient']}><PatientPrescriptions /></ProtectedRoute>} />
+      <Route path="/patient/reports" element={<ProtectedRoute roles={['patient']}><PatientReports /></ProtectedRoute>} />
+      <Route path="/patient/orders" element={<ProtectedRoute roles={['patient']}><ComingSoon label="My Orders" /></ProtectedRoute>} />
+      <Route path="/patient/notifications" element={<ProtectedRoute roles={['patient']}><ComingSoon label="Notifications" /></ProtectedRoute>} />
 
       {/* Rider */}
-      <Route
-        path="/rider"
-        element={<ProtectedRoute roles={['rider']}><RiderDashboard /></ProtectedRoute>}
-      />
-      <Route
-        path="/rider/deliveries"
-        element={<ProtectedRoute roles={['rider']}><ComingSoon label="My Deliveries" /></ProtectedRoute>}
-      />
-      <Route
-        path="/rider/history"
-        element={<ProtectedRoute roles={['rider']}><ComingSoon label="Delivery History" /></ProtectedRoute>}
-      />
+      <Route path="/rider" element={<ProtectedRoute roles={['rider']}><RiderDashboard /></ProtectedRoute>} />
+      <Route path="/rider/deliveries" element={<ProtectedRoute roles={['rider']}><ComingSoon label="My Deliveries" /></ProtectedRoute>} />
+      <Route path="/rider/history" element={<ProtectedRoute roles={['rider']}><ComingSoon label="Delivery History" /></ProtectedRoute>} />
 
-      {/* Catch-all */}
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

@@ -1,8 +1,7 @@
 /**
- * Patient dashboard — landing page after login.
- * Shows upcoming appointment, recent prescriptions, recent orders, and quick actions.
- * Day 1 version: static placeholders. Day 5/6 wires to real data.
+ * Patient dashboard — upcoming appointment + recent prescriptions.
  */
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calendar, Pill, FileText, ShoppingBag, Plus, ArrowRight } from 'lucide-react';
 
@@ -14,15 +13,30 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/useAuth';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import appointmentService from '@/services/appointmentService';
+import prescriptionService from '@/services/prescriptionService';
+import reportService from '@/services/reportService';
+import { doctorName, formatApptDate, statusVariant } from '@/utils/appointmentHelpers';
 
 export default function PatientDashboard() {
   const { user } = useAuth();
   usePageTitle('Patient Dashboard');
+  const [appointments, setAppointments] = useState([]);
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [reportCount, setReportCount] = useState(0);
 
-  // Placeholder data — replaced by API calls in Day 5/6
-  const upcoming = { doctor: 'Dr. Ayesha Khan', date: 'Tomorrow', time: '10:30 AM' };
-  const recentRx = [{ _id: 'r1', doctor: 'Dr. Ayesha Khan', issuedAt: '2026-05-30', medicines: 3 }];
-  const recentOrders = [{ _id: 'o1', total: 2400, status: 'shipped', placedAt: '2026-06-02' }];
+  useEffect(() => {
+    appointmentService.list().then(setAppointments).catch(() => {});
+    prescriptionService.list().then(setPrescriptions).catch(() => {});
+    reportService.list().then((r) => setReportCount(r.length)).catch(() => {});
+  }, []);
+
+  const upcoming = useMemo(() => {
+    const active = appointments.filter((a) => ['pending', 'confirmed'].includes(a.status));
+    return active.sort((a, b) => new Date(a.date) - new Date(b.date))[0] || null;
+  }, [appointments]);
+
+  const recentRx = prescriptions[0] || null;
 
   return (
     <DashboardLayout>
@@ -39,10 +53,14 @@ export default function PatientDashboard() {
       </PageHeader>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Upcoming appointments" value="1" icon={Calendar} />
-        <StatCard label="Prescriptions" value={recentRx.length} icon={Pill} />
-        <StatCard label="Medical reports" value="0" icon={FileText} />
-        <StatCard label="Active orders" value="1" icon={ShoppingBag} />
+        <StatCard
+          label="Upcoming appointments"
+          value={appointments.filter((a) => ['pending', 'confirmed'].includes(a.status)).length}
+          icon={Calendar}
+        />
+        <StatCard label="Prescriptions" value={prescriptions.length} icon={Pill} />
+        <StatCard label="Medical reports" value={reportCount} icon={FileText} />
+        <StatCard label="Active orders" value="0" icon={ShoppingBag} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
@@ -52,15 +70,19 @@ export default function PatientDashboard() {
             <CardDescription>Don't forget to arrive 10 minutes early.</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="font-medium">{upcoming.doctor}</p>
-                <p className="text-sm text-muted-foreground">
-                  {upcoming.date} · {upcoming.time}
-                </p>
+            {upcoming ? (
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">{doctorName(upcoming)}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {formatApptDate(upcoming.date)} · {upcoming.timeSlot}
+                  </p>
+                </div>
+                <Badge variant={statusVariant(upcoming.status)}>{upcoming.status}</Badge>
               </div>
-              <Badge variant="info">Confirmed</Badge>
-            </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">No upcoming appointments.</p>
+            )}
             <Button asChild variant="outline" className="mt-4 w-full">
               <Link to="/patient/appointments">
                 View all <ArrowRight className="h-4 w-4" />
@@ -75,11 +97,12 @@ export default function PatientDashboard() {
             <CardDescription>Issued by your dermatologist.</CardDescription>
           </CardHeader>
           <CardContent>
-            {recentRx[0] ? (
+            {recentRx ? (
               <div>
-                <p className="font-medium">{recentRx[0].doctor}</p>
+                <p className="font-medium">{recentRx.doctorId?.userId?.name || 'Doctor'}</p>
                 <p className="text-sm text-muted-foreground">
-                  {recentRx[0].medicines} medicines · {new Date(recentRx[0].issuedAt).toDateString()}
+                  {recentRx.medicines?.length || 0} medicines ·{' '}
+                  {new Date(recentRx.issuedAt || recentRx.createdAt).toDateString()}
                 </p>
               </div>
             ) : (
