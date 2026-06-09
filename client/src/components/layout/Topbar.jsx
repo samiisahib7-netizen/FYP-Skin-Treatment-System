@@ -4,11 +4,12 @@
  */
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, User } from 'lucide-react';
+import { LogOut, Menu, ShoppingCart, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, initialsOf } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
+import useCartStore from '@/store/cartStore';
 
 const ROLE_LABEL = {
   admin: 'Administrator',
@@ -21,6 +22,7 @@ export default function Topbar({ onMenuClick }) {
   const { user, role, logout } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
+  const cartCount = useCartStore((s) => s.itemCount());
 
   const handleLogout = () => {
     logout();
@@ -45,7 +47,23 @@ export default function Topbar({ onMenuClick }) {
           </Link>
         </div>
 
-        <div className="relative">
+        <div className="flex items-center gap-2">
+          {role === 'patient' ? (
+            <Link
+              to="/patient/cart"
+              className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Shopping cart"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              {cartCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-bold text-primary-foreground">
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
+
+          <div className="relative">
           <button
             type="button"
             onClick={() => setMenuOpen((v) => !v)}
@@ -89,6 +107,7 @@ export default function Topbar({ onMenuClick }) {
               </div>
             </>
           ) : null}
+          </div>
         </div>
       </div>
     </header>

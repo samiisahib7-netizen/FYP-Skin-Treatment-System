@@ -24,6 +24,7 @@ const NAV = {
     { to: '/patient/appointments', label: 'My Appointments', icon: Calendar },
     { to: '/patient/prescriptions', label: 'Prescriptions', icon: Pill },
     { to: '/patient/reports', label: 'Medical Reports', icon: FileText },
+    { to: '/patient/store', label: 'Shop', icon: Package },
     { to: '/patient/orders', label: 'My Orders', icon: ShoppingBag },
     { to: '/patient/notifications', label: 'Notifications', icon: Bell },
   ],

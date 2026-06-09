@@ -16,6 +16,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import appointmentService from '@/services/appointmentService';
 import prescriptionService from '@/services/prescriptionService';
 import reportService from '@/services/reportService';
+import orderService from '@/services/orderService';
 import { doctorName, formatApptDate, statusVariant } from '@/utils/appointmentHelpers';
 
 export default function PatientDashboard() {
@@ -24,11 +25,18 @@ export default function PatientDashboard() {
   const [appointments, setAppointments] = useState([]);
   const [prescriptions, setPrescriptions] = useState([]);
   const [reportCount, setReportCount] = useState(0);
+  const [activeOrders, setActiveOrders] = useState(0);
 
   useEffect(() => {
     appointmentService.list().then(setAppointments).catch(() => {});
     prescriptionService.list().then(setPrescriptions).catch(() => {});
     reportService.list().then((r) => setReportCount(r.length)).catch(() => {});
+    orderService
+      .list()
+      .then((orders) =>
+        setActiveOrders(orders.filter((o) => !['delivered', 'cancelled'].includes(o.status)).length)
+      )
+      .catch(() => {});
   }, []);
 
   const upcoming = useMemo(() => {
@@ -60,7 +68,7 @@ export default function PatientDashboard() {
         />
         <StatCard label="Prescriptions" value={prescriptions.length} icon={Pill} />
         <StatCard label="Medical reports" value={reportCount} icon={FileText} />
-        <StatCard label="Active orders" value="0" icon={ShoppingBag} />
+        <StatCard label="Active orders" value={activeOrders} icon={ShoppingBag} />
       </div>
 
       <div className="mt-6 grid gap-4 lg:grid-cols-2">
