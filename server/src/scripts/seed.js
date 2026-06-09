@@ -12,6 +12,7 @@ const Patient = require('../models/Patient');
 const Rider = require('../models/Rider');
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
+const Product = require('../models/Product');
 
 const DEFAULTS = [
   {
@@ -178,6 +179,23 @@ async function seed() {
         });
         console.log('    + sample prescription created');
       }
+    }
+  }
+
+  const SAMPLE_PRODUCTS = [
+    { name: 'Gentle Foaming Cleanser', description: 'pH-balanced cleanser for sensitive skin.', category: 'cleanser', price: 1200, stock: 50, brand: 'DermaCare' },
+    { name: 'Hyaluronic Acid Serum', description: 'Deep hydration for dry and dehydrated skin.', category: 'serum', price: 2400, stock: 35, brand: 'DermaCare' },
+    { name: 'SPF 50 Sunscreen', description: 'Broad-spectrum UV protection, non-greasy.', category: 'sunscreen', price: 1800, stock: 60, brand: 'SunShield' },
+    { name: 'Niacinamide 10% Serum', description: 'Reduces pores and evens skin tone.', category: 'serum', price: 2100, stock: 40, brand: 'ClearSkin' },
+    { name: 'Moisturizing Night Cream', description: 'Rich repair cream for overnight recovery.', category: 'moisturizer', price: 1600, stock: 45, brand: 'DermaCare' },
+    { name: 'Salicylic Acid Spot Treatment', description: 'Targets acne blemishes overnight.', category: 'treatment', price: 950, stock: 55, brand: 'ClearSkin' },
+  ];
+
+  for (const p of SAMPLE_PRODUCTS) {
+    const exists = await Product.findOne({ name: p.name });
+    if (!exists) {
+      await Product.create(p);
+      console.log(`    + product: ${p.name}`);
     }
   }
 

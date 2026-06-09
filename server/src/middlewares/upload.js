@@ -40,6 +40,33 @@ const upload = multer({
 /** Single report file field name: `file` */
 exports.uploadReport = upload.single('file');
 
+// Product images — server/uploads/products/
+const PRODUCT_DIR = path.join(__dirname, '..', '..', 'uploads', 'products');
+if (!fs.existsSync(PRODUCT_DIR)) fs.mkdirSync(PRODUCT_DIR, { recursive: true });
+
+const productStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, PRODUCT_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase() || '';
+    const base = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9._-]/g, '_').slice(0, 40);
+    cb(null, `${Date.now()}-${base}${ext}`);
+  },
+});
+
+const imageMime = new Set(['image/jpeg', 'image/png', 'image/webp']);
+const productFilter = (_req, file, cb) => {
+  if (imageMime.has(file.mimetype)) return cb(null, true);
+  cb(new ApiError(400, 'Only image files (JPEG, PNG, WebP) are allowed'));
+};
+
+const productUpload = multer({
+  storage: productStorage,
+  fileFilter: productFilter,
+  limits: { fileSize: 3 * 1024 * 1024 },
+});
+
+exports.uploadProductImage = productUpload.single('image');
+
 /** Wrap multer errors into ApiError */
 exports.handleUploadError = (err, _req, _res, next) => {
   if (err instanceof multer.MulterError) {
