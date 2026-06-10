@@ -9,7 +9,14 @@ export const orderService = {
       ? mockListOrders(params)
       : api.get('/orders', { params }).then((r) => r.data.data),
 
-  get: (id) => api.get(`/orders/${id}`).then((r) => r.data.data),
+  get: (id) =>
+    USE_MOCK
+      ? mockListOrders().then((list) => {
+          const o = list.find((x) => x._id === id);
+          if (!o) throw new Error('Order not found');
+          return o;
+        })
+      : api.get(`/orders/${id}`).then((r) => r.data.data),
 
   create: (payload) =>
     USE_MOCK
@@ -20,6 +27,9 @@ export const orderService = {
     USE_MOCK
       ? mockUpdateOrderStatus(id, status)
       : api.patch(`/orders/${id}/status`, { status }).then((r) => r.data.data),
+
+  assignRider: (id, riderId) =>
+    api.patch(`/orders/${id}/assign-rider`, { riderId }).then((r) => r.data.data),
 };
 
 export default orderService;

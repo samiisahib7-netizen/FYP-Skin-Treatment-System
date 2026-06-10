@@ -22,6 +22,7 @@ import PatientStore from '@/pages/patient/Store';
 import PatientCart from '@/pages/patient/Cart';
 import PatientCheckout from '@/pages/patient/Checkout';
 import PatientOrders from '@/pages/patient/Orders';
+import PayOrder from '@/pages/patient/PayOrder';
 
 import DoctorDashboard from '@/pages/doctor/Dashboard';
 import DoctorAppointments from '@/pages/doctor/Appointments';
@@ -35,6 +36,8 @@ import AdminProducts from '@/pages/admin/Products';
 import AdminOrders from '@/pages/admin/Orders';
 
 import RiderDashboard from '@/pages/rider/Dashboard';
+import RiderDeliveries from '@/pages/rider/Deliveries';
+import RiderHistory from '@/pages/rider/History';
 
 function Home() {
   return (
@@ -132,12 +135,13 @@ export default function App() {
       <Route path="/patient/cart" element={<ProtectedRoute roles={['patient']}><PatientCart /></ProtectedRoute>} />
       <Route path="/patient/checkout" element={<ProtectedRoute roles={['patient']}><PatientCheckout /></ProtectedRoute>} />
       <Route path="/patient/orders" element={<ProtectedRoute roles={['patient']}><PatientOrders /></ProtectedRoute>} />
+      <Route path="/patient/orders/:id/pay" element={<ProtectedRoute roles={['patient']}><PayOrder /></ProtectedRoute>} />
       <Route path="/patient/notifications" element={<ProtectedRoute roles={['patient']}><ComingSoon label="Notifications" /></ProtectedRoute>} />
 
       {/* Rider */}
       <Route path="/rider" element={<ProtectedRoute roles={['rider']}><RiderDashboard /></ProtectedRoute>} />
-      <Route path="/rider/deliveries" element={<ProtectedRoute roles={['rider']}><ComingSoon label="My Deliveries" /></ProtectedRoute>} />
-      <Route path="/rider/history" element={<ProtectedRoute roles={['rider']}><ComingSoon label="Delivery History" /></ProtectedRoute>} />
+      <Route path="/rider/deliveries" element={<ProtectedRoute roles={['rider']}><RiderDeliveries /></ProtectedRoute>} />
+      <Route path="/rider/history" element={<ProtectedRoute roles={['rider']}><RiderHistory /></ProtectedRoute>} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

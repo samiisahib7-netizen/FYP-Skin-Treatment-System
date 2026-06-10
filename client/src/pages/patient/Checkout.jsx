@@ -1,5 +1,5 @@
 /**
- * Patient — checkout (shipping address + place order).
+ * Patient — checkout (shipping address + place order → redirect to pay).
  */
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -47,13 +47,13 @@ export default function PatientCheckout() {
 
   const onSubmit = async (values) => {
     try {
-      await orderService.create({
+      const order = await orderService.create({
         items: items.map((i) => ({ productId: i.productId, quantity: i.quantity })),
         shippingAddress: values.shippingAddress,
       });
       clear();
-      toast.success('Order placed! Payment will be added in the next step.');
-      navigate('/patient/orders');
+      toast.success('Order created — complete payment to confirm.');
+      navigate(`/patient/orders/${order._id}/pay`, { replace: true });
     } catch (e) {
       toast.error(e.response?.data?.message || e.message || 'Checkout failed');
     }
@@ -61,7 +61,7 @@ export default function PatientCheckout() {
 
   return (
     <DashboardLayout>
-      <PageHeader title="Checkout" description="Confirm shipping and place your order." icon={CreditCard} />
+      <PageHeader title="Checkout" description="Enter shipping details, then pay securely." icon={CreditCard} />
 
       <div className="mx-auto grid max-w-3xl gap-6 lg:grid-cols-2">
         <Card>
@@ -83,7 +83,6 @@ export default function PatientCheckout() {
                 <span>PKR {subtotal.toLocaleString()}</span>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">Payment integration (Stripe) arrives on Day 4.</p>
           </CardContent>
         </Card>
 
@@ -106,7 +105,7 @@ export default function PatientCheckout() {
                 ) : null}
               </div>
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Placing order…' : 'Place order'}
+                {isSubmitting ? 'Creating order…' : 'Continue to payment'}
               </Button>
             </form>
           </CardContent>
