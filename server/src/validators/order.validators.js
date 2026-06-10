@@ -15,3 +15,7 @@ exports.updateOrderStatusSchema = Joi.object({
     .valid('pending', 'paid', 'shipped', 'out-for-delivery', 'delivered', 'cancelled')
     .required(),
 });
+
+exports.assignRiderSchema = Joi.object({
+  riderId: Joi.string().hex().length(24).required(),
+});
