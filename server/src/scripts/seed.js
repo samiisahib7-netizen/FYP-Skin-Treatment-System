@@ -13,6 +13,10 @@ const Rider = require('../models/Rider');
 const Appointment = require('../models/Appointment');
 const Prescription = require('../models/Prescription');
 const Product = require('../models/Product');
+const Notification = require('../models/Notification');
+const Review = require('../models/Review');
+const Notification = require('../models/Notification');
+const Review = require('../models/Review');
 
 const DEFAULTS = [
   {
@@ -196,6 +200,43 @@ async function seed() {
     if (!exists) {
       await Product.create(p);
       console.log(`    + product: ${p.name}`);
+    }
+  }
+
+  if (patientUser && doctorUser) {
+    const patient = await Patient.findOne({ userId: patientUser._id });
+    const doctor = await Doctor.findOne({ userId: doctorUser._id });
+    if (patient && doctor) {
+      const welcomeExists = await Notification.findOne({
+        userId: patientUser._id,
+        title: 'Welcome to Skin Treatment',
+      });
+      if (!welcomeExists) {
+        await Notification.create({
+          userId: patientUser._id,
+          type: 'general',
+          title: 'Welcome to Skin Treatment',
+          message: 'Book appointments, view prescriptions, and shop skincare products from your dashboard.',
+        });
+        console.log('    + sample patient notification');
+      }
+
+      const reviewExists = await Review.findOne({
+        patientId: patient._id,
+        targetType: 'doctor',
+        targetId: doctor._id,
+      });
+      if (!reviewExists) {
+        await Review.create({
+          patientId: patient._id,
+          targetType: 'doctor',
+          targetId: doctor._id,
+          rating: 5,
+          comment: 'Very professional and helpful consultation.',
+        });
+        await Doctor.findByIdAndUpdate(doctor._id, { rating: 5, totalReviews: 1 });
+        console.log('    + sample doctor review');
+      }
     }
   }
 

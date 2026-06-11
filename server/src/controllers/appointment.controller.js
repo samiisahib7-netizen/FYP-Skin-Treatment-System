@@ -12,6 +12,7 @@ const Patient = require('../models/Patient');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPatientByUser, getDoctorByUser } = require('../utils/roleProfile');
+const { createNotification } = require('../services/notificationService');
 
 const POPULATE = [
   { path: 'patientId', populate: { path: 'userId', select: '-password' } },
@@ -116,6 +117,15 @@ exports.createAppointment = asyncHandler(async (req, res) => {
   });
 
   const data = await enrichAppointment(await Appointment.findById(appointment._id));
+
+  const doctorUserId = doctor.userId;
+  await createNotification(doctorUserId, {
+    type: 'appointment',
+    title: 'New appointment request',
+    message: `A patient booked ${timeSlot} on ${apptDate.toDateString()}.`,
+    meta: { appointmentId: appointment._id },
+  });
+
   res.status(201).json({ success: true, message: 'Appointment booked.', data });
 });
 
@@ -149,6 +159,23 @@ exports.updateStatus = asyncHandler(async (req, res) => {
 
   appointment.status = status;
   await appointment.save();
+
+  const patient = await Patient.findById(appointment.patientId).populate('userId', 'name');
+  if (patient?.userId) {
+    const labels = {
+      confirmed: 'confirmed',
+      completed: 'marked as completed',
+      cancelled: 'cancelled',
+    };
+    if (labels[status]) {
+      await createNotification(patient.userId._id, {
+        type: 'appointment',
+        title: 'Appointment update',
+        message: `Your appointment on ${new Date(appointment.date).toDateString()} was ${labels[status]}.`,
+        meta: { appointmentId: appointment._id, status },
+      });
+    }
+  }
 
   const data = await Appointment.findById(appointment._id).populate(POPULATE);
   res.json({ success: true, message: 'Status updated.', data });

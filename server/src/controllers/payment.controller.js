@@ -11,6 +11,7 @@ const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPatientByUser } = require('../utils/roleProfile');
 const stripeService = require('../services/stripeService');
+const { createNotification } = require('../services/notificationService');
 
 async function resolvePayable(type, refId, patient) {
   if (type === 'order') {
@@ -118,6 +119,12 @@ exports.confirmPayment = asyncHandler(async (req, res) => {
       order.status = 'paid';
       order.paymentId = payment._id;
       await order.save();
+      await createNotification(req.user._id, {
+        type: 'order',
+        title: 'Payment successful',
+        message: `Your order of PKR ${order.totalAmount.toLocaleString()} was paid successfully.`,
+        meta: { orderId: order._id },
+      });
     }
   }
 

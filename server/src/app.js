@@ -52,6 +52,9 @@ app.use('/api/v1/reports', require('./routes/report.routes'));
 app.use('/api/v1/products', require('./routes/product.routes'));
 app.use('/api/v1/orders', require('./routes/order.routes'));
 app.use('/api/v1/payments', require('./routes/payment.routes'));
+app.use('/api/v1/notifications', require('./routes/notification.routes'));
+app.use('/api/v1/reviews', require('./routes/review.routes'));
+app.use('/api/v1/analytics', require('./routes/analytics.routes'));
 
 // 404 + centralized error handler
 app.use((req, res) => {

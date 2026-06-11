@@ -13,6 +13,7 @@ const Rider = require('../models/Rider');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { getPatientByUser, getRiderByUser } = require('../utils/roleProfile');
+const { createNotification } = require('../services/notificationService');
 
 const POPULATE = [
   { path: 'patientId', populate: { path: 'userId', select: '-password' } },
@@ -154,6 +155,16 @@ exports.updateStatus = asyncHandler(async (req, res) => {
   order.status = status;
   await order.save();
 
+  const patient = await Patient.findById(order.patientId);
+  if (patient) {
+    await createNotification(patient.userId, {
+      type: 'order',
+      title: 'Order status updated',
+      message: `Your order is now "${status.replace(/-/g, ' ')}".`,
+      meta: { orderId: order._id, status },
+    });
+  }
+
   const data = await Order.findById(order._id).populate(POPULATE);
   res.json({ success: true, message: 'Order status updated.', data });
 });
@@ -174,6 +185,22 @@ exports.assignRider = asyncHandler(async (req, res) => {
   order.riderId = rider._id;
   if (order.status === 'paid') order.status = 'shipped';
   await order.save();
+
+  const patient = await Patient.findById(order.patientId);
+  if (patient) {
+    await createNotification(patient.userId, {
+      type: 'order',
+      title: 'Order shipped',
+      message: 'A rider has been assigned and your order is on its way.',
+      meta: { orderId: order._id },
+    });
+  }
+  await createNotification(rider.userId, {
+    type: 'delivery',
+    title: 'New delivery assigned',
+    message: `You have a new delivery (order #${order._id.toString().slice(-6)}).`,
+    meta: { orderId: order._id },
+  });
 
   const data = await Order.findById(order._id).populate(POPULATE);
   res.json({ success: true, message: 'Rider assigned.', data });
