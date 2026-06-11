@@ -27,6 +27,7 @@ const NAV = {
     { to: '/patient/store', label: 'Shop', icon: Package },
     { to: '/patient/orders', label: 'My Orders', icon: ShoppingBag },
     { to: '/patient/notifications', label: 'Notifications', icon: Bell },
+    { to: '/patient/reviews', label: 'Reviews', icon: Star },
   ],
   doctor: [
     { to: '/doctor', label: 'Dashboard', icon: LayoutDashboard, end: true },

@@ -34,6 +34,10 @@ import AdminAppointments from '@/pages/admin/Appointments';
 import AdminReports from '@/pages/admin/Reports';
 import AdminProducts from '@/pages/admin/Products';
 import AdminOrders from '@/pages/admin/Orders';
+import AdminAnalytics from '@/pages/admin/Analytics';
+
+import Notifications from '@/pages/shared/Notifications';
+import PatientReviews from '@/pages/patient/Reviews';
 
 import RiderDashboard from '@/pages/rider/Dashboard';
 import RiderDeliveries from '@/pages/rider/Deliveries';
@@ -115,7 +119,7 @@ export default function App() {
       <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']}><AdminReports /></ProtectedRoute>} />
       <Route path="/admin/orders" element={<ProtectedRoute roles={['admin']}><AdminOrders /></ProtectedRoute>} />
       <Route path="/admin/products" element={<ProtectedRoute roles={['admin']}><AdminProducts /></ProtectedRoute>} />
-      <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Analytics Dashboard" /></ProtectedRoute>} />
+      <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
 
       {/* Doctor */}
       <Route path="/doctor" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
@@ -123,7 +127,7 @@ export default function App() {
       <Route path="/doctor/patients" element={<ProtectedRoute roles={['doctor']}><ComingSoon label="My Patients" /></ProtectedRoute>} />
       <Route path="/doctor/prescriptions" element={<ProtectedRoute roles={['doctor']}><DoctorPrescriptions /></ProtectedRoute>} />
       <Route path="/doctor/prescriptions/new" element={<ProtectedRoute roles={['doctor']}><NewPrescription /></ProtectedRoute>} />
-      <Route path="/doctor/notifications" element={<ProtectedRoute roles={['doctor']}><ComingSoon label="Doctor Notifications" /></ProtectedRoute>} />
+      <Route path="/doctor/notifications" element={<ProtectedRoute roles={['doctor']}><Notifications /></ProtectedRoute>} />
 
       {/* Patient */}
       <Route path="/patient" element={<ProtectedRoute roles={['patient']}><PatientDashboard /></ProtectedRoute>} />
@@ -136,7 +140,8 @@ export default function App() {
       <Route path="/patient/checkout" element={<ProtectedRoute roles={['patient']}><PatientCheckout /></ProtectedRoute>} />
       <Route path="/patient/orders" element={<ProtectedRoute roles={['patient']}><PatientOrders /></ProtectedRoute>} />
       <Route path="/patient/orders/:id/pay" element={<ProtectedRoute roles={['patient']}><PayOrder /></ProtectedRoute>} />
-      <Route path="/patient/notifications" element={<ProtectedRoute roles={['patient']}><ComingSoon label="Notifications" /></ProtectedRoute>} />
+      <Route path="/patient/notifications" element={<ProtectedRoute roles={['patient']}><Notifications /></ProtectedRoute>} />
+      <Route path="/patient/reviews" element={<ProtectedRoute roles={['patient']}><PatientReviews /></ProtectedRoute>} />
 
       {/* Rider */}
       <Route path="/rider" element={<ProtectedRoute roles={['rider']}><RiderDashboard /></ProtectedRoute>} />

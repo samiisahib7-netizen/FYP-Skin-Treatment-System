@@ -2,14 +2,15 @@
  * Topbar — brand + user menu + logout.
  * Used by DashboardLayout for all 4 role dashboards.
  */
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { LogOut, Menu, ShoppingCart, User } from 'lucide-react';
+import { Bell, LogOut, Menu, ShoppingCart, User } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, initialsOf } from '@/components/ui/avatar';
 import { useAuth } from '@/hooks/useAuth';
 import useCartStore from '@/store/cartStore';
+import notificationService from '@/services/notificationService';
 
 const ROLE_LABEL = {
   admin: 'Administrator',
@@ -23,6 +24,18 @@ export default function Topbar({ onMenuClick }) {
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const cartCount = useCartStore((s) => s.itemCount());
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const notifPath =
+    role === 'patient' ? '/patient/notifications' : role === 'doctor' ? '/doctor/notifications' : null;
+
+  useEffect(() => {
+    if (!notifPath) return;
+    notificationService
+      .unreadCount()
+      .then((d) => setUnreadCount(d.count || 0))
+      .catch(() => {});
+  }, [notifPath]);
 
   const handleLogout = () => {
     logout();
@@ -48,6 +61,21 @@ export default function Topbar({ onMenuClick }) {
         </div>
 
         <div className="flex items-center gap-2">
+          {notifPath ? (
+            <Link
+              to={notifPath}
+              className="relative rounded-md p-2 text-muted-foreground hover:bg-muted hover:text-foreground"
+              aria-label="Notifications"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
+
           {role === 'patient' ? (
             <Link
               to="/patient/cart"

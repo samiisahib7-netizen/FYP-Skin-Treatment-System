@@ -3,7 +3,7 @@
  */
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Package } from 'lucide-react';
+import { ShoppingBag, Package, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 import DashboardLayout from '@/components/layout/DashboardLayout';
@@ -15,12 +15,14 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import orderService from '@/services/orderService';
+import ReviewFormDialog from '@/components/reviews/ReviewFormDialog';
 import { orderStatusVariant } from '@/utils/orderHelpers';
 
 export default function PatientOrders() {
   usePageTitle('My Orders');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [reviewTarget, setReviewTarget] = useState(null);
 
   useEffect(() => {
     orderService
@@ -75,6 +77,22 @@ export default function PatientOrders() {
                       <Button asChild size="sm">
                         <Link to={`/patient/orders/${o._id}/pay`}>Pay now</Link>
                       </Button>
+                    ) : o.status === 'delivered' && o.items?.[0] ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          const item = o.items[0];
+                          const pid = item.productId?._id || item.productId;
+                          setReviewTarget({
+                            targetType: 'product',
+                            targetId: pid,
+                            targetLabel: item.name || 'Product',
+                          });
+                        }}
+                      >
+                        <Star className="h-3.5 w-3.5" /> Review
+                      </Button>
                     ) : (
                       '—'
                     )}
@@ -85,6 +103,13 @@ export default function PatientOrders() {
           </Table>
         </div>
       )}
+      {reviewTarget ? (
+        <ReviewFormDialog
+          open={Boolean(reviewTarget)}
+          onOpenChange={(v) => !v && setReviewTarget(null)}
+          {...reviewTarget}
+        />
+      ) : null}
     </DashboardLayout>
   );
 }
