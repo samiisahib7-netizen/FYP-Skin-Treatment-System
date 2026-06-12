@@ -87,13 +87,15 @@ function Home() {
   );
 }
 
-/** Placeholder for routes added in later days — keeps sidebar/topbar visible. */
-function ComingSoon({ label }) {
+/** Placeholder for Day 7+ admin/doctor management pages. */
+function ComingSoon({ label, description }) {
   return (
     <DashboardLayout>
-      <div className="rounded-lg border border-dashed border-border bg-muted/30 p-8 text-center">
-        <p className="text-sm font-medium text-foreground">{label}</p>
-        <p className="mt-1 text-xs text-muted-foreground">This page lands in a later day of the build.</p>
+      <div className="mx-auto max-w-lg rounded-lg border border-dashed border-border bg-muted/30 px-6 py-12 text-center">
+        <p className="text-lg font-semibold text-foreground">{label}</p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {description || 'This section is scheduled for Day 7 — user & role management.'}
+        </p>
       </div>
     </DashboardLayout>
   );

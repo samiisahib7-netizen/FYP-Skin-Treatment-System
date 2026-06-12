@@ -13,6 +13,8 @@ import EmptyState from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import TableWrap from '@/components/shared/TableWrap';
+import ErrorState from '@/components/shared/ErrorState';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import orderService from '@/services/orderService';
 import ReviewFormDialog from '@/components/reviews/ReviewFormDialog';
@@ -22,14 +24,21 @@ export default function PatientOrders() {
   usePageTitle('My Orders');
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [reviewTarget, setReviewTarget] = useState(null);
 
-  useEffect(() => {
+  const load = () => {
+    setLoading(true);
+    setError(null);
     orderService
       .list()
       .then(setItems)
-      .catch((e) => toast.error(e.message || 'Failed to load orders'))
+      .catch((e) => setError(e.message || 'Failed to load orders'))
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    load();
   }, []);
 
   return (
@@ -43,7 +52,9 @@ export default function PatientOrders() {
       </PageHeader>
 
       {loading ? (
-        <Loading />
+        <Loading variant="section" />
+      ) : error ? (
+        <ErrorState description={error} onRetry={load} />
       ) : items.length === 0 ? (
         <EmptyState
           title="No orders yet"
@@ -52,7 +63,7 @@ export default function PatientOrders() {
           onAction={() => window.location.assign('/patient/store')}
         />
       ) : (
-        <div className="rounded-lg border border-border bg-white">
+        <TableWrap>
           <Table>
             <TableHeader>
               <TableRow>
@@ -101,7 +112,7 @@ export default function PatientOrders() {
               ))}
             </TableBody>
           </Table>
-        </div>
+        </TableWrap>
       )}
       {reviewTarget ? (
         <ReviewFormDialog
