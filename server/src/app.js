@@ -36,8 +36,14 @@ const path = require('path');
 app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
 
 // Health check
+const { isMockMode: emailMock } = require('./services/emailService');
+
 app.get('/api/v1/health', (req, res) => {
-  res.json({ success: true, message: 'Skin Treatment API is running.', data: { uptime: process.uptime() } });
+  res.json({
+    success: true,
+    message: 'Skin Treatment API is running.',
+    data: { uptime: process.uptime(), emailMock: emailMock() },
+  });
 });
 
 // Mount feature routers (added module-by-module)

@@ -1,9 +1,61 @@
 /**
- * Email service — STUB.
- * For Module 1 we just log the message to the console so the password-reset flow
- * can be tested end-to-end without SMTP credentials. Module 11 will replace
- * the implementation with Nodemailer (Gmail SMTP).
+ * Email service — Nodemailer (Gmail SMTP) with console fallback in dev.
+ * Mock mode when SMTP credentials are placeholders (same pattern as Stripe).
  */
+const nodemailer = require('nodemailer');
+
+const SMTP_USER = process.env.SMTP_USER || '';
+const SMTP_PASS = process.env.SMTP_PASS || '';
+const IS_MOCK =
+  !SMTP_USER ||
+  !SMTP_PASS ||
+  SMTP_USER.includes('your-email') ||
+  SMTP_PASS.includes('your-app-password');
+
+let transporter = null;
+
+function getTransporter() {
+  if (IS_MOCK) return null;
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: Number(process.env.SMTP_PORT) || 465,
+      secure: process.env.SMTP_SECURE !== 'false',
+      auth: { user: SMTP_USER, pass: SMTP_PASS },
+    });
+  }
+  return transporter;
+}
+
+function fromAddress() {
+  return process.env.SMTP_FROM || `"Skin Treatment" <${SMTP_USER}>`;
+}
+
+async function deliver({ to, subject, text, html }) {
+  if (IS_MOCK) {
+    // eslint-disable-next-line no-console
+    console.log('\n========== [email MOCK] ==========');
+    // eslint-disable-next-line no-console
+    console.log(`To:      ${to}`);
+    // eslint-disable-next-line no-console
+    console.log(`Subject: ${subject}`);
+    // eslint-disable-next-line no-console
+    console.log(text || html || '');
+    // eslint-disable-next-line no-console
+    console.log('==================================\n');
+    return { mock: true };
+  }
+
+  const transport = getTransporter();
+  const info = await transport.sendMail({
+    from: fromAddress(),
+    to,
+    subject,
+    text,
+    html: html || text?.replace(/\n/g, '<br>'),
+  });
+  return { messageId: info.messageId };
+}
 
 const RESET_TEMPLATE = (name, link) => `
 Hello ${name || 'there'},
@@ -18,35 +70,36 @@ If you did not request this, you can safely ignore this email.
 — Skin Treatment Team
 `;
 
-/**
- * Send a password-reset email.
- * For now: console only. Returns the raw link so tests can capture it.
- */
 async function sendPasswordResetEmail({ to, name, rawToken }) {
   const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
   const link = `${clientUrl}/reset-password/${rawToken}`;
+  const text = RESET_TEMPLATE(name, link);
 
-  // eslint-disable-next-line no-console
-  console.log('\n========== [email STUB] password reset ==========');
-  // eslint-disable-next-line no-console
-  console.log(`To:      ${to}`);
-  // eslint-disable-next-line no-console
-  console.log(`Subject: Reset your Skin Treatment password`);
-  // eslint-disable-next-line no-console
-  console.log(RESET_TEMPLATE(name, link));
-  // eslint-disable-next-line no-console
-  console.log('================================================\n');
+  await deliver({
+    to,
+    subject: 'Reset your Skin Treatment password',
+    text,
+  });
 
-  return { link };
+  return { link, mock: IS_MOCK };
 }
 
-/**
- * Generic notifier — placeholder so other modules can call us without a
- * circular dependency once Module 11 lands.
- */
 async function sendNotificationEmail({ to, subject, text }) {
-  // eslint-disable-next-line no-console
-  console.log(`[email STUB] To: ${to} | Subject: ${subject}\n${text}\n`);
+  await deliver({ to, subject, text });
 }
 
-module.exports = { sendPasswordResetEmail, sendNotificationEmail };
+async function sendWelcomeEmail({ to, name }) {
+  const text = `Hello ${name || 'there'},\n\nWelcome to Skin Treatment! Book appointments, view prescriptions, and shop skincare products from your dashboard.\n\n— Skin Treatment Team`;
+  await deliver({ to, subject: 'Welcome to Skin Treatment', text });
+}
+
+function isMockMode() {
+  return IS_MOCK;
+}
+
+module.exports = {
+  sendPasswordResetEmail,
+  sendNotificationEmail,
+  sendWelcomeEmail,
+  isMockMode,
+};

@@ -14,7 +14,7 @@ const Patient = require('../models/Patient');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { signToken } = require('../utils/jwt');
-const { sendPasswordResetEmail } = require('../services/emailService');
+const { sendPasswordResetEmail, sendWelcomeEmail } = require('../services/emailService');
 
 /** Helpers */
 const issueToken = (user) => signToken({ id: user._id, role: user.role });
@@ -34,6 +34,8 @@ exports.register = asyncHandler(async (req, res) => {
 
   const user = await User.create({ name, email, password, role: 'patient' });
   await Patient.create({ userId: user._id });
+
+  sendWelcomeEmail({ to: user.email, name: user.name }).catch(() => {});
 
   const token = issueToken(user);
   res.status(201).json({
