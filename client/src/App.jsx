@@ -6,7 +6,6 @@
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import ProtectedRoute from '@/components/shared/ProtectedRoute';
-import DashboardLayout from '@/components/layout/DashboardLayout';
 
 import Login from '@/pages/auth/Login';
 import Register from '@/pages/auth/Register';
@@ -30,11 +29,17 @@ import DoctorPrescriptions from '@/pages/doctor/Prescriptions';
 import NewPrescription from '@/pages/doctor/NewPrescription';
 
 import AdminDashboard from '@/pages/admin/Dashboard';
+import AdminUsers from '@/pages/admin/Users';
+import AdminDoctors from '@/pages/admin/Doctors';
+import AdminPatients from '@/pages/admin/Patients';
+import AdminRiders from '@/pages/admin/Riders';
 import AdminAppointments from '@/pages/admin/Appointments';
 import AdminReports from '@/pages/admin/Reports';
 import AdminProducts from '@/pages/admin/Products';
 import AdminOrders from '@/pages/admin/Orders';
 import AdminAnalytics from '@/pages/admin/Analytics';
+
+import DoctorPatients from '@/pages/doctor/Patients';
 
 import Notifications from '@/pages/shared/Notifications';
 import PatientReviews from '@/pages/patient/Reviews';
@@ -87,20 +92,6 @@ function Home() {
   );
 }
 
-/** Placeholder for Day 7+ admin/doctor management pages. */
-function ComingSoon({ label, description }) {
-  return (
-    <DashboardLayout>
-      <div className="mx-auto max-w-lg rounded-lg border border-dashed border-border bg-muted/30 px-6 py-12 text-center">
-        <p className="text-lg font-semibold text-foreground">{label}</p>
-        <p className="mt-2 text-sm text-muted-foreground">
-          {description || 'This section is scheduled for Day 7 — user & role management.'}
-        </p>
-      </div>
-    </DashboardLayout>
-  );
-}
-
 export default function App() {
   return (
     <Routes>
@@ -113,10 +104,10 @@ export default function App() {
 
       {/* Admin */}
       <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-      <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><ComingSoon label="User Management" /></ProtectedRoute>} />
-      <Route path="/admin/doctors" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Doctors" /></ProtectedRoute>} />
-      <Route path="/admin/patients" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Patients" /></ProtectedRoute>} />
-      <Route path="/admin/riders" element={<ProtectedRoute roles={['admin']}><ComingSoon label="Manage Riders" /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUsers /></ProtectedRoute>} />
+      <Route path="/admin/doctors" element={<ProtectedRoute roles={['admin']}><AdminDoctors /></ProtectedRoute>} />
+      <Route path="/admin/patients" element={<ProtectedRoute roles={['admin']}><AdminPatients /></ProtectedRoute>} />
+      <Route path="/admin/riders" element={<ProtectedRoute roles={['admin']}><AdminRiders /></ProtectedRoute>} />
       <Route path="/admin/appointments" element={<ProtectedRoute roles={['admin']}><AdminAppointments /></ProtectedRoute>} />
       <Route path="/admin/reports" element={<ProtectedRoute roles={['admin']}><AdminReports /></ProtectedRoute>} />
       <Route path="/admin/orders" element={<ProtectedRoute roles={['admin']}><AdminOrders /></ProtectedRoute>} />
@@ -126,7 +117,7 @@ export default function App() {
       {/* Doctor */}
       <Route path="/doctor" element={<ProtectedRoute roles={['doctor']}><DoctorDashboard /></ProtectedRoute>} />
       <Route path="/doctor/appointments" element={<ProtectedRoute roles={['doctor']}><DoctorAppointments /></ProtectedRoute>} />
-      <Route path="/doctor/patients" element={<ProtectedRoute roles={['doctor']}><ComingSoon label="My Patients" /></ProtectedRoute>} />
+      <Route path="/doctor/patients" element={<ProtectedRoute roles={['doctor']}><DoctorPatients /></ProtectedRoute>} />
       <Route path="/doctor/prescriptions" element={<ProtectedRoute roles={['doctor']}><DoctorPrescriptions /></ProtectedRoute>} />
       <Route path="/doctor/prescriptions/new" element={<ProtectedRoute roles={['doctor']}><NewPrescription /></ProtectedRoute>} />
       <Route path="/doctor/notifications" element={<ProtectedRoute roles={['doctor']}><Notifications /></ProtectedRoute>} />
