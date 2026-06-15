@@ -69,6 +69,36 @@ exports.deleteUser = asyncHandler(async (req, res) => {
   res.json({ success: true, message: 'User deleted.' });
 });
 
+exports.createUser = asyncHandler(async (req, res) => {
+  const { name, email, password, phone, role } = req.body;
+  if (!['admin', 'doctor', 'patient', 'rider'].includes(role)) {
+    throw new ApiError(400, 'Invalid role specified.');
+  }
+
+  const exists = await User.findOne({ email });
+  if (exists) throw new ApiError(409, 'A user with this email already exists.');
+
+  const user = await User.create({ name, email, password, role, phone });
+
+  // Create role-specific record
+  if (role === 'doctor') {
+    const Doctor = require('../models/Doctor');
+    await Doctor.create({ userId: user._id, specialization: 'General', consultationFee: 0 });
+  } else if (role === 'patient') {
+    const Patient = require('../models/Patient');
+    await Patient.create({ userId: user._id });
+  } else if (role === 'rider') {
+    const Rider = require('../models/Rider');
+    await Rider.create({ userId: user._id });
+  }
+
+  res.status(201).json({
+    success: true,
+    message: 'User created successfully.',
+    data: user,
+  });
+});
+
 exports.updateOwnProfile = asyncHandler(async (req, res) => {
   const { name, phone, avatar } = req.body;
   const user = await User.findById(req.user._id);

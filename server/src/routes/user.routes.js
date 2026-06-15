@@ -12,6 +12,7 @@ const ctrl = require('../controllers/user.controller');
 const { updateUserSchema, updateProfileSchema } = require('../validators/user.validators');
 
 router.get('/', auth, roleGuard('admin'), ctrl.listUsers);
+router.post('/', auth, roleGuard('admin'), ctrl.createUser);
 router.put('/profile', auth, validate(updateProfileSchema), ctrl.updateOwnProfile);
 router.get('/:id', auth, ctrl.getUser);
 router.put('/:id', auth, roleGuard('admin'), validate(updateUserSchema), ctrl.updateUser);
