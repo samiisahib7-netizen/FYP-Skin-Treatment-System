@@ -81,7 +81,8 @@ async function run() {
   console.log('✓ pay order');
 
   const riders = await req('GET', '/riders', { token: adminToken });
-  const riderId = riders.data[0].rider._id;
+  const seededRider = riders.data.find((r) => r.rider && r.email === 'rider@skintreatment.local');
+  const riderId = seededRider.rider._id;
   await req('PATCH', `/orders/${order.data._id}/assign-rider`, {
     token: adminToken,
     body: { riderId },

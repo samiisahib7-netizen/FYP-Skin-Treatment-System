@@ -35,11 +35,15 @@ async function enrichAppointment(doc) {
 
 async function assertCanViewAppointment(req, appointment) {
   const role = req.user.role;
+  // After populate, the ID might be on ._id; otherwise use .toString() directly
+  const patientId = appointment.patientId?._id?.toString?.() || appointment.patientId?.toString?.();
+  const doctorId = appointment.doctorId?._id?.toString?.() || appointment.doctorId?.toString?.();
+
   if (role === 'admin') return;
 
   if (role === 'patient') {
     const patient = await Patient.findOne({ userId: req.user._id });
-    if (!patient || appointment.patientId.toString() !== patient._id.toString()) {
+    if (!patient || patientId !== patient._id.toString()) {
       throw new ApiError(403, 'Forbidden');
     }
     return;
@@ -47,7 +51,7 @@ async function assertCanViewAppointment(req, appointment) {
 
   if (role === 'doctor') {
     const doctor = await Doctor.findOne({ userId: req.user._id });
-    if (!doctor || appointment.doctorId.toString() !== doctor._id.toString()) {
+    if (!doctor || doctorId !== doctor._id.toString()) {
       throw new ApiError(403, 'Forbidden');
     }
     return;
@@ -99,6 +103,12 @@ exports.createAppointment = asyncHandler(async (req, res) => {
   if (!doctor) throw new ApiError(404, 'Doctor not found');
 
   const apptDate = dayStart(date);
+  // Reject past dates (allow same-day booking if time slot hasn't passed)
+  const today = dayStart(new Date());
+  if (apptDate < today) {
+    throw new ApiError(400, 'Cannot book an appointment in the past');
+  }
+
   const conflict = await Appointment.findOne({
     doctorId,
     date: apptDate,

@@ -47,8 +47,9 @@ export default function AdminUsers() {
     userService
       .list(params)
       .then((res) => {
-        setItems(res.items || []);
-        setTotal(res.total || 0);
+        const d = res.data || res;
+        setItems(d.items || []);
+        setTotal(d.total || 0);
       })
       .catch((e) => toast.error(e.message || 'Failed to load'))
       .finally(() => setLoading(false));

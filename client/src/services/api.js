@@ -9,9 +9,21 @@ const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 });
 
+// Read token from Zustand persist store (key: skin-treatment-auth)
+function getStoredToken() {
+  try {
+    const raw = localStorage.getItem('skin-treatment-auth');
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed?.state?.token || null;
+  } catch {
+    return null;
+  }
+}
+
 // Attach JWT to every request if present
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
+  const token = getStoredToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
@@ -25,8 +37,7 @@ api.interceptors.response.use(
 
     if (status === 401) {
       // Token invalid/expired — clear and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
+      localStorage.removeItem('skin-treatment-auth');
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
       }

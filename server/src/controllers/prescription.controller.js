@@ -24,7 +24,9 @@ async function assertCanViewPrescription(req, rx) {
 
   if (role === 'patient') {
     const patient = await Patient.findOne({ userId: req.user._id });
-    if (!patient || rx.patientId.toString() !== patient._id.toString()) {
+    // Safely handle populated vs raw ObjectId
+    const rxPatientId = rx.patientId?._id?.toString?.() || rx.patientId?.toString?.();
+    if (!patient || rxPatientId !== patient._id.toString()) {
       throw new ApiError(403, 'Forbidden');
     }
     return;
@@ -32,7 +34,8 @@ async function assertCanViewPrescription(req, rx) {
 
   if (role === 'doctor') {
     const doctor = await getDoctorByUser(req.user._id);
-    if (rx.doctorId.toString() !== doctor._id.toString()) {
+    const rxDoctorId = rx.doctorId?._id?.toString?.() || rx.doctorId?.toString?.();
+    if (!doctor || rxDoctorId !== doctor._id.toString()) {
       throw new ApiError(403, 'Forbidden');
     }
     return;
